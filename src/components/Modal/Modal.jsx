@@ -9,11 +9,13 @@ export function Modal({ largeImageURL, onClose }) {
   };
 
   useEffect(() => {
+    document.body.style.overflow = "hidden";
     const handleEscKey = (e) => {
       if (e.code === "Escape") onClose();
     };
     window.addEventListener("keydown", handleEscKey);
     return () => {
+      document.body.style.overflow = "visible";
       window.removeEventListener("keydown", handleEscKey);
     };
   }, [onClose]);
