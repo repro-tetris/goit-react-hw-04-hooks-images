@@ -1,38 +1,35 @@
-import React, { Component } from "react";
+import React, { useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 
-export class Modal extends Component {
-  handleCloseModal = (e) => {
+export function Modal({ largeImageURL, onClose }) {
+  const handleCloseModal = (e) => {
     if (e.target === e.currentTarget) {
-      this.closeModal();
+      closeModal();
     }
   };
+  const closeModal = useCallback(() => {
+    onClose();
+  }, [onClose]);
 
-  closeModal = () => {
-    this.props.onClose();
-  };
+  useEffect(() => {
+    console.log("mount");
+    const handleEscKey = (e) => {
+      if (e.code === "Escape") closeModal();
+    };
+    window.addEventListener("keydown", handleEscKey);
+    return () => {
+      console.log("unmount");
+      window.removeEventListener("keydown", handleEscKey);
+    };
+  }, [closeModal]);
 
-  handleEscKey = (e) => {
-    if (e.code === "Escape") this.closeModal();
-  };
-
-  componentDidMount() {
-    window.addEventListener("keydown", this.handleEscKey);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener("keydown", this.handleEscKey);
-  }
-
-  render() {
-    return (
-      <div className="Overlay" onClick={this.handleCloseModal}>
-        <div className="Modal">
-          <img src={this.props.largeImageURL} alt="" />
-        </div>
+  return (
+    <div className="Overlay" onClick={handleCloseModal}>
+      <div className="Modal">
+        <img src={largeImageURL} alt="" />
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 Modal.propTypes = {

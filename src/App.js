@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { fetchImages } from "./services/searchService";
@@ -9,49 +9,39 @@ import Modal from "./components/Modal/Modal";
 import Loader from "./components/Loader/Loader";
 import { STATUS } from "./variables/statuses";
 
-export class App extends Component {
-  state = {
-    page: 1,
-    searchString: "",
-    images: [],
-    status: STATUS.IDLE,
-    showButton: false,
-    largeImageUrl: null,
-    isLoading: false,
+export default function App() {
+  const [page, setPage] = useState(1);
+  const [searchString, setSearchString] = useState("");
+  const [images, setImages] = useState([]);
+  const [status, setStatus] = useState(STATUS.IDLE);
+  const [showButton, setShowButton] = useState(false);
+  const [largeImageUrl, setLargeImageUrl] = useState(null);
+
+  const handleSearchbarOnSubmit = (searchString) => {
+    setSearchString(searchString);
+    setPage(1);
+    setImages([]);
+    setStatus(STATUS.LOAD);
   };
 
-  handleSearchbarOnSubmit = (searchString) => {
-    this.setState({
-      searchString,
-      page: 1,
-      images: [],
-      status: STATUS.LOAD,
-    });
+  const handleSelectImage = (largeImageUrl) => setLargeImageUrl(largeImageUrl);
+
+  const handleCloseModal = () => setLargeImageUrl(null);
+
+  const handleClickLoadMoreButton = () => {
+    setPage((prev) => prev + 1);
+    setStatus(STATUS.LOAD);
   };
 
-  handleSelectImage = (largeImageUrl) => {
-    this.setState({ largeImageUrl });
-  };
-
-  handleCloseModal = () => {
-    this.setState({ largeImageUrl: null });
-  };
-
-  handleClickLoadMoreButton = () => {
-    this.setState((prevState) => {
-      return { page: prevState.page + 1, status: STATUS.LOAD };
-    });
-  };
-
-  componentDidUpdate() {
-    const { status, page, searchString } = this.state;
-
+  useEffect(() => {
+    console.log(searchString, page, status);
     if (status === STATUS.LOAD) {
       fetchImages(searchString, page)
         .then((images) => {
           if (images.hits.length === 0 && page === 1) {
             toast(`No images by string "${searchString}"`);
-            this.setState({ status: STATUS.IDLE, showButton: false });
+            setShowButton(false);
+            setStatus(STATUS.IDLE);
             return;
           }
 
@@ -59,38 +49,28 @@ export class App extends Component {
           if (!showButton) {
             toast("It`s all");
           }
-          this.setState({
-            images: [...this.state.images, ...images.hits],
-            status: STATUS.IDLE,
-            showButton,
-          });
+
+          setShowButton(showButton);
+          setImages((prev) => [...prev, ...images.hits]);
+          setStatus(STATUS.IDLE);
         })
         .catch((error) => {
           toast.error(error.message);
         });
     }
-  }
+  }, [status, page, searchString]);
 
-  render() {
-    const { status, showButton, largeImageUrl, images } = this.state;
+  return (
+    <div>
+      <Searchbar onSubmit={handleSearchbarOnSubmit}></Searchbar>
 
-    return (
-      <div>
-        <Searchbar onSubmit={this.handleSearchbarOnSubmit}></Searchbar>
-
-        <ImageGallery images={images} onSelect={this.handleSelectImage} />
-        {status === STATUS.LOAD && <Loader />}
-        {showButton && <Button onClick={this.handleClickLoadMoreButton} />}
-        {largeImageUrl && (
-          <Modal
-            largeImageURL={largeImageUrl}
-            onClose={this.handleCloseModal}
-          />
-        )}
-        <ToastContainer />
-      </div>
-    );
-  }
+      <ImageGallery images={images} onSelect={handleSelectImage} />
+      {status === STATUS.LOAD && <Loader />}
+      {showButton && <Button onClick={handleClickLoadMoreButton} />}
+      {largeImageUrl && (
+        <Modal largeImageURL={largeImageUrl} onClose={handleCloseModal} />
+      )}
+      {<ToastContainer />}
+    </div>
+  );
 }
-
-export default App;
