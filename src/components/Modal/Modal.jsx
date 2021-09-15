@@ -9,13 +9,11 @@ export function Modal({ largeImageURL, onClose }) {
   };
 
   useEffect(() => {
-    console.log("mount");
     const handleEscKey = (e) => {
       if (e.code === "Escape") onClose();
     };
     window.addEventListener("keydown", handleEscKey);
     return () => {
-      console.log("unmount");
       window.removeEventListener("keydown", handleEscKey);
     };
   }, [onClose]);

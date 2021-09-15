@@ -40,7 +40,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    console.log(searchString.current, page.current, status);
+    
     if (status === STATUS.LOAD) {
       fetchImages(searchString.current, page.current)
         .then((images) => {
