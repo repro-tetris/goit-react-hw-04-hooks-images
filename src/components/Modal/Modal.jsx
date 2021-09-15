@@ -1,27 +1,24 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 
 export function Modal({ largeImageURL, onClose }) {
   const handleCloseModal = (e) => {
     if (e.target === e.currentTarget) {
-      closeModal();
+      onClose();
     }
   };
-  const closeModal = useCallback(() => {
-    onClose();
-  }, [onClose]);
 
   useEffect(() => {
     console.log("mount");
     const handleEscKey = (e) => {
-      if (e.code === "Escape") closeModal();
+      if (e.code === "Escape") onClose();
     };
     window.addEventListener("keydown", handleEscKey);
     return () => {
       console.log("unmount");
       window.removeEventListener("keydown", handleEscKey);
     };
-  }, [closeModal]);
+  }, [onClose]);
 
   return (
     <div className="Overlay" onClick={handleCloseModal}>
